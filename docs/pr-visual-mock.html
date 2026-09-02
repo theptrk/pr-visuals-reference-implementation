@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PR visual review — mock</title>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "default" });
+</script>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; background: #f6f8fa; color: #1f2328; margin: 0; padding: 2rem; }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  .card { background: #fff; border: 1px solid #d1d9e0; border-radius: 6px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.05rem; }
+  .tag { display: inline-block; font-size: .75rem; font-weight: 600; padding: .1rem .5rem; border-radius: 999px; vertical-align: middle; margin-right: .4rem; }
+  .tag.open { color: #1a7f37; background: #dafbe1; border: 1px solid #1a7f37; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: .5rem 0; }
+  th, td { border: 1px solid #d1d9e0; padding: .3rem .6rem; text-align: left; }
+  th { background: #f6f8fa; }
+  tr.added { background: #dafbe1; }
+  tr.removed { background: #ffebe9; }
+  tr.renamed { background: #ddf4ff; }
+  tr.changed { background: #fff1e5; }
+  tr.modified { background: #ddf4ff; }
+  .plus { color: #1a7f37; font-weight: 700; }
+  .minus { color: #cf222e; font-weight: 700; }
+  .wave { color: #0969da; font-weight: 700; }
+  .tilde { color: #bc4c00; font-weight: 700; }
+  .pct { color: #0969da; font-weight: 700; }
+  pre.diff { background: #f6f8fa; border-radius: 6px; padding: .8rem 1rem; font-size: .8rem; line-height: 1.5; overflow-x: auto; }
+  pre.diff .a { color: #1a7f37; }
+  pre.diff .d { color: #cf222e; }
+  pre.diff .r { color: #0969da; }
+  pre.diff .o { color: #bc4c00; }
+  .legend span { margin-right: 1rem; font-size: .8rem; }
+  .swatch { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-right: .25rem; vertical-align: middle; }
+  .mermaid { background: #fff; text-align: center; }
+  #gvizSchema svg { width: 100%; height: auto; display: block; }
+  #mermaidFlow svg { width: 100%; height: auto; display: block; }
+  .zoomctl { font-size: .8rem; color: #59636e; margin-bottom: .4rem; }
+  .zoomctl input { vertical-align: middle; }
+  .note { color: #59636e; font-size: .8rem; border-left: 3px solid #d1d9e0; padding-left: .8rem; }
+  .meta { color: #59636e; font-size: .8rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="card">
+    <h1><span class="tag open">OPEN</span> Add Gmail integration and per-user timezone support <span class="meta">#12 &middot; +2,450 &minus;28 across 29 files</span></h1>
+    <p>This is the PR description body — one page representing the entire PR. It is generated from the diff when the PR opens and re-rendered on every push; sections appear only when the PR touches what they describe. No human effort per PR.</p>
+  </div>
+
+  <div class="card">
+
+    <h2>📊 Schema changes</h2>
+    <p class="meta">Included because this PR changes <code>models.py</code> / <code>migrations/</code>.</p>
+    <p class="legend">
+      <span><span class="swatch" style="background:#dafbe1"></span>added</span>
+      <span><span class="swatch" style="background:#ffebe9"></span>removed</span>
+      <span><span class="swatch" style="background:#fff1e5"></span>renamed</span>
+      <span><span class="swatch" style="background:#ddf4ff"></span>modified</span>
+    </p>
+
+    <table>
+      <tr><th>Change</th><th>Table</th><th>Column</th><th>Type</th></tr>
+      <tr class="added"><td><span class="plus">+ NEW TABLE</span></td><td>integrations_gmailmailbox</td><td>—</td><td>15 columns</td></tr>
+      <tr class="added"><td><span class="plus">+ NEW TABLE</span></td><td>integrations_gmailsyncrun</td><td>—</td><td>13 columns</td></tr>
+      <tr class="added"><td><span class="plus">+ NEW TABLE</span></td><td>integrations_gmailmessage</td><td>—</td><td>13 columns, 2 indexes, 1 unique</td></tr>
+      <tr class="added"><td><span class="plus">+ ADD COLUMN</span></td><td>users_user</td><td>timezone</td><td>varchar(64) default 'UTC'</td></tr>
+      <tr class="changed"><td><span class="tilde">~ RENAME COLUMN</span></td><td>integrations_gmailmailbox</td><td>refresh_token → encrypted_refresh_token</td><td>text</td></tr>
+    </table>
+
+    <pre class="diff">
+<span class="a">+ CREATE TABLE integrations_gmailmailbox   (id, user_id FK → users_user, email, encrypted_refresh_token, ...)</span>
+<span class="a">+ CREATE TABLE integrations_gmailsyncrun   (id, mailbox_id FK → integrations_gmailmailbox, status, ...)</span>
+<span class="a">+ CREATE TABLE integrations_gmailmessage   (id, mailbox_id FK → integrations_gmailmailbox, gmail_id, ... UNIQUE (mailbox, gmail_id))</span>
+<span class="a">+ ALTER TABLE users_user ADD COLUMN timezone varchar(64) DEFAULT 'UTC'</span>
+<span class="o">~ RENAME COLUMN integrations_gmailmailbox.refresh_token TO encrypted_refresh_token (migration 0004)</span>
+    </pre>
+  </div>
+
+  <div class="card">
+
+    <h2>&#129517; Graphviz ERD &mdash; same data, real table grids</h2>
+    <p class="meta">Primary visual — rendered with <code>dot</code> in CI and attached as PNG; edges anchor to the exact FK columns.</p>
+    <p class="meta">HTML-like table labels: aligned columns, header bands, and <b>per-row colors</b> &mdash; green row = new column, orange row = renamed, green header/border = new table. Rendered with <code>dot</code> in CI and attached as an image; the Mermaid version stays as a text-only fallback for email/CLI readers.</p>
+    <p class="zoomctl">
+      Zoom
+      <input type="range" min="30" max="200" value="100" step="10"
+             oninput="document.querySelector('#gvizSchema svg').style.width=this.value+'%';document.getElementById('gvizZoomLabel').textContent=this.value+'%'">
+      <span id="gvizZoomLabel">100%</span>
+    </p>
+    <div id="gvizSchema" style="overflow-x:auto">
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 15.1.1 (20260805.0921)
+ -->
+<!-- Title: schema_diff Pages: 1 -->
+<svg width="948pt" height="744pt"
+ viewBox="0.00 0.00 948.00 744.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 739.75)">
+<title>schema_diff</title>
+<!-- User -->
+<g id="node1" class="node">
+<title>User</title>
+<polygon fill="#0969da" stroke="none" points="20.09,-481 20.09,-503.75 200.59,-503.75 200.59,-481 20.09,-481"/>
+<polygon fill="none" stroke="#0969da" points="20.09,-481 20.09,-503.75 200.59,-503.75 200.59,-481 20.09,-481"/>
+<text xml:space="preserve" text-anchor="start" x="78.09" y="-488.35" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="white">users_user</text>
+<polygon fill="none" stroke="#0969da" points="20.09,-456 20.09,-481 85.59,-481 85.59,-456 20.09,-456"/>
+<text xml:space="preserve" text-anchor="start" x="25.09" y="-464.75" font-family="Helvetica,sans-Serif" font-size="14.00">id</text>
+<polygon fill="none" stroke="#0969da" points="85.59,-456 85.59,-481 200.59,-481 200.59,-456 85.59,-456"/>
+<text xml:space="preserve" text-anchor="start" x="90.59" y="-464.75" font-family="Helvetica,sans-Serif" font-size="14.00">bigint PK</text>
+<polygon fill="none" stroke="#0969da" points="20.09,-431 20.09,-456 85.59,-456 85.59,-431 20.09,-431"/>
+<text xml:space="preserve" text-anchor="start" x="25.09" y="-439.75" font-family="Helvetica,sans-Serif" font-size="14.00">email</text>
+<polygon fill="none" stroke="#0969da" points="85.59,-431 85.59,-456 200.59,-456 200.59,-431 85.59,-431"/>
+<text xml:space="preserve" text-anchor="start" x="90.59" y="-439.75" font-family="Helvetica,sans-Serif" font-size="14.00">varchar unique</text>
+<polygon fill="none" stroke="#0969da" points="20.09,-406 20.09,-431 85.59,-431 85.59,-406 20.09,-406"/>
+<text xml:space="preserve" text-anchor="start" x="25.09" y="-414.75" font-family="Helvetica,sans-Serif" font-size="14.00">name</text>
+<polygon fill="none" stroke="#0969da" points="85.59,-406 85.59,-431 200.59,-431 200.59,-406 85.59,-406"/>
+<text xml:space="preserve" text-anchor="start" x="90.59" y="-414.75" font-family="Helvetica,sans-Serif" font-size="14.00">varchar</text>
+<polygon fill="#dafbe1" stroke="none" points="20.09,-381 20.09,-406 85.59,-406 85.59,-381 20.09,-381"/>
+<polygon fill="none" stroke="#0969da" points="20.09,-381 20.09,-406 85.59,-406 85.59,-381 20.09,-381"/>
+<text xml:space="preserve" text-anchor="start" x="25.09" y="-389.75" font-family="Helvetica,sans-Serif" font-size="14.00">timezone</text>
+<polygon fill="#dafbe1" stroke="none" points="85.59,-381 85.59,-406 200.59,-406 200.59,-381 85.59,-381"/>
+<polygon fill="none" stroke="#0969da" points="85.59,-381 85.59,-406 200.59,-406 200.59,-381 85.59,-381"/>
+<text xml:space="preserve" text-anchor="start" x="90.59" y="-389.75" font-family="Helvetica,sans-Serif" font-size="14.00">varchar(64) NEW</text>
+<polygon fill="none" stroke="#0969da" points="20.09,-356 20.09,-381 85.59,-381 85.59,-356 20.09,-356"/>
+<text xml:space="preserve" text-anchor="start" x="25.09" y="-364.75" font-family="Helvetica,sans-Serif" font-size="14.00">is_active</text>
+<polygon fill="none" stroke="#0969da" points="85.59,-356 85.59,-381 200.59,-381 200.59,-356 85.59,-356"/>
+<text xml:space="preserve" text-anchor="start" x="90.59" y="-364.75" font-family="Helvetica,sans-Serif" font-size="14.00">bool</text>
+</g>
+<!-- GmailMailbox -->
+<g id="node2" class="node">
+<title>GmailMailbox</title>
+<polygon fill="#1a7f37" stroke="none" points="314.84,-507 314.84,-529.75 589.84,-529.75 589.84,-507 314.84,-507"/>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-507 314.84,-529.75 589.84,-529.75 589.84,-507 314.84,-507"/>
+<text xml:space="preserve" text-anchor="start" x="376.96" y="-514.35" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="white">integrations_gmailmailbox</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-482 314.84,-507 474.09,-507 474.09,-482 314.84,-482"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-490.75" font-family="Helvetica,sans-Serif" font-size="14.00">id</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-482 474.09,-507 589.84,-507 589.84,-482 474.09,-482"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-490.75" font-family="Helvetica,sans-Serif" font-size="14.00">bigint PK</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-454 314.84,-482 474.09,-482 474.09,-454 314.84,-454"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-464.25" font-family="Helvetica,sans-Serif" font-size="14.00">user_id</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-454 474.09,-482 589.84,-482 589.84,-454 474.09,-454"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-462.75" font-family="Helvetica,sans-Serif" font-size="14.00">FK → users_user</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-429 314.84,-454 474.09,-454 474.09,-429 314.84,-429"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-437.75" font-family="Helvetica,sans-Serif" font-size="14.00">email</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-429 474.09,-454 589.84,-454 589.84,-429 474.09,-429"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-437.75" font-family="Helvetica,sans-Serif" font-size="14.00">varchar</text>
+<polygon fill="#fff1e5" stroke="none" points="314.84,-401 314.84,-429 474.09,-429 474.09,-401 314.84,-401"/>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-401 314.84,-429 474.09,-429 474.09,-401 314.84,-401"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-411.25" font-family="Helvetica,sans-Serif" font-size="14.00">encrypted_refresh_token</text>
+<polygon fill="#fff1e5" stroke="none" points="474.09,-401 474.09,-429 589.84,-429 589.84,-401 474.09,-401"/>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-401 474.09,-429 589.84,-429 589.84,-401 474.09,-401"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-409.75" font-family="Helvetica,sans-Serif" font-size="14.00">text ← renamed</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-376 314.84,-401 474.09,-401 474.09,-376 314.84,-376"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-384.75" font-family="Helvetica,sans-Serif" font-size="14.00">scopes</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-376 474.09,-401 589.84,-401 589.84,-376 474.09,-376"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-384.75" font-family="Helvetica,sans-Serif" font-size="14.00">json</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-351 314.84,-376 474.09,-376 474.09,-351 314.84,-351"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-359.75" font-family="Helvetica,sans-Serif" font-size="14.00">history_id</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-351 474.09,-376 589.84,-376 589.84,-351 474.09,-351"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-359.75" font-family="Helvetica,sans-Serif" font-size="14.00">varchar(64)</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-326 314.84,-351 474.09,-351 474.09,-326 314.84,-326"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-334.75" font-family="Helvetica,sans-Serif" font-size="14.00">status</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-326 474.09,-351 589.84,-351 589.84,-326 474.09,-326"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-334.75" font-family="Helvetica,sans-Serif" font-size="14.00">varchar(16)</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-301 314.84,-326 474.09,-326 474.09,-301 314.84,-301"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-309.75" font-family="Helvetica,sans-Serif" font-size="14.00">sync_error</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-301 474.09,-326 589.84,-326 589.84,-301 474.09,-301"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-309.75" font-family="Helvetica,sans-Serif" font-size="14.00">text</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-276 314.84,-301 474.09,-301 474.09,-276 314.84,-276"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-284.75" font-family="Helvetica,sans-Serif" font-size="14.00">last_synced_at</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-276 474.09,-301 589.84,-301 589.84,-276 474.09,-276"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-284.75" font-family="Helvetica,sans-Serif" font-size="14.00">datetime null</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-251 314.84,-276 474.09,-276 474.09,-251 314.84,-251"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-259.75" font-family="Helvetica,sans-Serif" font-size="14.00">sync_started_at</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-251 474.09,-276 589.84,-276 589.84,-251 474.09,-251"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-259.75" font-family="Helvetica,sans-Serif" font-size="14.00">datetime null</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-226 314.84,-251 474.09,-251 474.09,-226 314.84,-226"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-234.75" font-family="Helvetica,sans-Serif" font-size="14.00">next_sync_at</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-226 474.09,-251 589.84,-251 589.84,-226 474.09,-226"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-234.75" font-family="Helvetica,sans-Serif" font-size="14.00">datetime null</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-201 314.84,-226 474.09,-226 474.09,-201 314.84,-201"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-209.75" font-family="Helvetica,sans-Serif" font-size="14.00">imported_since</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-201 474.09,-226 589.84,-226 589.84,-201 474.09,-201"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-209.75" font-family="Helvetica,sans-Serif" font-size="14.00">datetime null</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-176 314.84,-201 474.09,-201 474.09,-176 314.84,-176"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-184.75" font-family="Helvetica,sans-Serif" font-size="14.00">full_sync_page_token</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-176 474.09,-201 589.84,-201 589.84,-176 474.09,-176"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-184.75" font-family="Helvetica,sans-Serif" font-size="14.00">varchar(512)</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-151 314.84,-176 474.09,-176 474.09,-151 314.84,-151"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-159.75" font-family="Helvetica,sans-Serif" font-size="14.00">created_at</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-151 474.09,-176 589.84,-176 589.84,-151 474.09,-151"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-159.75" font-family="Helvetica,sans-Serif" font-size="14.00">datetime</text>
+<polygon fill="none" stroke="#1a7f37" points="314.84,-126 314.84,-151 474.09,-151 474.09,-126 314.84,-126"/>
+<text xml:space="preserve" text-anchor="start" x="319.84" y="-134.75" font-family="Helvetica,sans-Serif" font-size="14.00">updated_at</text>
+<polygon fill="none" stroke="#1a7f37" points="474.09,-126 474.09,-151 589.84,-151 589.84,-126 474.09,-126"/>
+<text xml:space="preserve" text-anchor="start" x="479.09" y="-134.75" font-family="Helvetica,sans-Serif" font-size="14.00">datetime</text>
+</g>
+<!-- User&#45;&gt;GmailMailbox -->
+<g id="edge1" class="edge">
+<title>User:u_id&#45;&gt;GmailMailbox:m_user</title>
+<path fill="none" stroke="#59636e" d="M19.09,-468.5C1.64,-468.5 7.59,-495.57 20.09,-507.75 80.08,-566.23 126.17,-522.79 208.59,-507.75 253.74,-499.51 262.55,-472.9 302.37,-468.59"/>
+<polygon fill="#59636e" stroke="#59636e" points="302.52,-472.09 312.32,-468.08 302.16,-465.1 302.52,-472.09"/>
+<text xml:space="preserve" text-anchor="middle" x="257.71" y="-504.17" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#59636e">gmail_mailbox</text>
+<text xml:space="preserve" text-anchor="middle" x="296.17" y="-473.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#59636e">0..1</text>
+<text xml:space="preserve" text-anchor="middle" x="2.62" y="-475.98" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#59636e">1</text>
+</g>
+<!-- GmailSyncRun -->
+<g id="node3" class="node">
+<title>GmailSyncRun</title>
+<polygon fill="#1a7f37" stroke="none" points="686.84,-709 686.84,-731.75 931.84,-731.75 931.84,-709 686.84,-709"/>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-709 686.84,-731.75 931.84,-731.75 931.84,-709 686.84,-709"/>
+<text xml:space="preserve" text-anchor="start" x="732.84" y="-716.35" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="white">integrations_gmailsyncrun</text>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-684 686.84,-709 802.59,-709 802.59,-684 686.84,-684"/>
+<text xml:space="preserve" text-anchor="start" x="691.84" y="-692.75" font-family="Helvetica,sans-Serif" font-size="14.00">id</text>
+<polygon fill="none" stroke="#1a7f37" points="802.59,-684 802.59,-709 931.84,-709 931.84,-684 802.59,-684"/>
+<text xml:space="preserve" text-anchor="start" x="807.59" y="-692.75" font-family="Helvetica,sans-Serif" font-size="14.00">bigint PK</text>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-656 686.84,-684 802.59,-684 802.59,-656 686.84,-656"/>
+<text xml:space="preserve" text-anchor="start" x="691.84" y="-666.25" font-family="Helvetica,sans-Serif" font-size="14.00">mailbox_id</text>
+<polygon fill="none" stroke="#1a7f37" points="802.59,-656 802.59,-684 931.84,-684 931.84,-656 802.59,-656"/>
+<text xml:space="preserve" text-anchor="start" x="807.59" y="-664.75" font-family="Helvetica,sans-Serif" font-size="14.00">FK → gmailmailbox</text>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-631 686.84,-656 802.59,-656 802.59,-631 686.84,-631"/>
+<text xml:space="preserve" text-anchor="start" x="691.84" y="-639.75" font-family="Helvetica,sans-Serif" font-size="14.00">status</text>
+<polygon fill="none" stroke="#1a7f37" points="802.59,-631 802.59,-656 931.84,-656 931.84,-631 802.59,-631"/>
+<text xml:space="preserve" text-anchor="start" x="807.59" y="-639.75" font-family="Helvetica,sans-Serif" font-size="14.00">varchar(16)</text>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-606 686.84,-631 802.59,-631 802.59,-606 686.84,-606"/>
+<text xml:space="preserve" text-anchor="start" x="691.84" y="-614.75" font-family="Helvetica,sans-Serif" font-size="14.00">started_at</text>
+<polygon fill="none" stroke="#1a7f37" points="802.59,-606 802.59,-631 931.84,-631 931.84,-606 802.59,-606"/>
+<text xml:space="preserve" text-anchor="start" x="807.59" y="-614.75" font-family="Helvetica,sans-Serif" font-size="14.00">datetime</text>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-581 686.84,-606 802.59,-606 802.59,-581 686.84,-581"/>
+<text xml:space="preserve" text-anchor="start" x="691.84" y="-589.75" font-family="Helvetica,sans-Serif" font-size="14.00">finished_at</text>
+<polygon fill="none" stroke="#1a7f37" points="802.59,-581 802.59,-606 931.84,-606 931.84,-581 802.59,-581"/>
+<text xml:space="preserve" text-anchor="start" x="807.59" y="-589.75" font-family="Helvetica,sans-Serif" font-size="14.00">datetime null</text>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-556 686.84,-581 802.59,-581 802.59,-556 686.84,-556"/>
+<text xml:space="preserve" text-anchor="start" x="691.84" y="-564.75" font-family="Helvetica,sans-Serif" font-size="14.00">discovered_count</text>
+<polygon fill="none" stroke="#1a7f37" points="802.59,-556 802.59,-581 931.84,-581 931.84,-556 802.59,-556"/>
+<text xml:space="preserve" text-anchor="start" x="807.59" y="-564.75" font-family="Helvetica,sans-Serif" font-size="14.00">int</text>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-531 686.84,-556 802.59,-556 802.59,-531 686.84,-531"/>
+<text xml:space="preserve" text-anchor="start" x="691.84" y="-539.75" font-family="Helvetica,sans-Serif" font-size="14.00">processed_count</text>
+<polygon fill="none" stroke="#1a7f37" points="802.59,-531 802.59,-556 931.84,-556 931.84,-531 802.59,-531"/>
+<text xml:space="preserve" text-anchor="start" x="807.59" y="-539.75" font-family="Helvetica,sans-Serif" font-size="14.00">int</text>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-506 686.84,-531 802.59,-531 802.59,-506 686.84,-506"/>
+<text xml:space="preserve" text-anchor="start" x="691.84" y="-514.75" font-family="Helvetica,sans-Serif" font-size="14.00">created_count</text>
+<polygon fill="none" stroke="#1a7f37" points="802.59,-506 802.59,-531 931.84,-531 931.84,-506 802.59,-506"/>
+<text xml:space="preserve" text-anchor="start" x="807.59" y="-514.75" font-family="Helvetica,sans-Serif" font-size="14.00">int</text>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-481 686.84,-506 802.59,-506 802.59,-481 686.84,-481"/>
+<text xml:space="preserve" text-anchor="start" x="691.84" y="-489.75" font-family="Helvetica,sans-Serif" font-size="14.00">updated_count</text>
+<polygon fill="none" stroke="#1a7f37" points="802.59,-481 802.59,-506 931.84,-506 931.84,-481 802.59,-481"/>
+<text xml:space="preserve" text-anchor="start" x="807.59" y="-489.75" font-family="Helvetica,sans-Serif" font-size="14.00">int</text>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-456 686.84,-481 802.59,-481 802.59,-456 686.84,-456"/>
+<text xml:space="preserve" text-anchor="start" x="691.84" y="-464.75" font-family="Helvetica,sans-Serif" font-size="14.00">deleted_count</text>
+<polygon fill="none" stroke="#1a7f37" points="802.59,-456 802.59,-481 931.84,-481 931.84,-456 802.59,-456"/>
+<text xml:space="preserve" text-anchor="start" x="807.59" y="-464.75" font-family="Helvetica,sans-Serif" font-size="14.00">int</text>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-431 686.84,-456 802.59,-456 802.59,-431 686.84,-431"/>
+<text xml:space="preserve" text-anchor="start" x="691.84" y="-439.75" font-family="Helvetica,sans-Serif" font-size="14.00">task_id</text>
+<polygon fill="none" stroke="#1a7f37" points="802.59,-431 802.59,-456 931.84,-456 931.84,-431 802.59,-431"/>
+<text xml:space="preserve" text-anchor="start" x="807.59" y="-439.75" font-family="Helvetica,sans-Serif" font-size="14.00">varchar(255)</text>
+<polygon fill="none" stroke="#1a7f37" points="686.84,-406 686.84,-431 802.59,-431 802.59,-406 686.84,-406"/>
+<text xml:space="preserve" text-anchor="start" x="691.84" y="-414.75" font-family="Helvetica,sans-Serif" font-size="14.00">error</text>
+<polygon fill="none" stroke="#1a7f37" points="802.59,-406 802.59,-431 931.84,-431 931.84,-406 802.59,-406"/>
+<text xml:space="preserve" text-anchor="start" x="807.59" y="-414.75" font-family="Helvetica,sans-Serif" font-size="14.00">text</text>
+</g>
+<!-- GmailMailbox&#45;&gt;GmailSyncRun -->
+<g id="edge2" class="edge">
+<title>GmailMailbox:mb_id&#45;&gt;GmailSyncRun:r_mailbox</title>
+<path fill="none" stroke="#59636e" d="M313.84,-494.5C296.39,-494.5 304.67,-519.57 314.84,-533.75 414.96,-673.36 506.09,-670.21 674.38,-670.01"/>
+<polygon fill="#59636e" stroke="#59636e" points="674.33,-673.51 684.32,-670 674.32,-666.51 674.33,-673.51"/>
+<text xml:space="preserve" text-anchor="middle" x="638.34" y="-671.8" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#59636e">sync_runs</text>
+<text xml:space="preserve" text-anchor="middle" x="667.72" y="-674.59" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#59636e">0..*</text>
+<text xml:space="preserve" text-anchor="middle" x="297.27" y="-501.83" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#59636e">1</text>
+</g>
+<!-- GmailMessage -->
+<g id="node4" class="node">
+<title>GmailMessage</title>
+<polygon fill="#1a7f37" stroke="none" points="700.71,-357 700.71,-379.75 917.96,-379.75 917.96,-357 700.71,-357"/>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-357 700.71,-379.75 917.96,-379.75 917.96,-357 700.71,-357"/>
+<text xml:space="preserve" text-anchor="start" x="730.59" y="-364.35" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="white">integrations_gmailmessage</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-332 700.71,-357 788.71,-357 788.71,-332 700.71,-332"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-340.75" font-family="Helvetica,sans-Serif" font-size="14.00">id</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-332 788.71,-357 917.96,-357 917.96,-332 788.71,-332"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-340.75" font-family="Helvetica,sans-Serif" font-size="14.00">bigint PK</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-304 700.71,-332 788.71,-332 788.71,-304 700.71,-304"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-314.25" font-family="Helvetica,sans-Serif" font-size="14.00">mailbox_id</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-304 788.71,-332 917.96,-332 917.96,-304 788.71,-304"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-312.75" font-family="Helvetica,sans-Serif" font-size="14.00">FK → gmailmailbox</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-279 700.71,-304 788.71,-304 788.71,-279 700.71,-279"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-287.75" font-family="Helvetica,sans-Serif" font-size="14.00">gmail_id</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-279 788.71,-304 917.96,-304 917.96,-279 788.71,-279"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-287.75" font-family="Helvetica,sans-Serif" font-size="14.00">varchar(128)</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-254 700.71,-279 788.71,-279 788.71,-254 700.71,-254"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-262.75" font-family="Helvetica,sans-Serif" font-size="14.00">thread_id</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-254 788.71,-279 917.96,-279 917.96,-254 788.71,-254"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-262.75" font-family="Helvetica,sans-Serif" font-size="14.00">varchar(128)</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-229 700.71,-254 788.71,-254 788.71,-229 700.71,-229"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-237.75" font-family="Helvetica,sans-Serif" font-size="14.00">internal_date</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-229 788.71,-254 917.96,-254 917.96,-229 788.71,-229"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-237.75" font-family="Helvetica,sans-Serif" font-size="14.00">datetime null</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-204 700.71,-229 788.71,-229 788.71,-204 700.71,-204"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-212.75" font-family="Helvetica,sans-Serif" font-size="14.00">sender</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-204 788.71,-229 917.96,-229 917.96,-204 788.71,-204"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-212.75" font-family="Helvetica,sans-Serif" font-size="14.00">text</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-179 700.71,-204 788.71,-204 788.71,-179 700.71,-179"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-187.75" font-family="Helvetica,sans-Serif" font-size="14.00">recipients</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-179 788.71,-204 917.96,-204 917.96,-179 788.71,-179"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-187.75" font-family="Helvetica,sans-Serif" font-size="14.00">text</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-154 700.71,-179 788.71,-179 788.71,-154 700.71,-154"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-162.75" font-family="Helvetica,sans-Serif" font-size="14.00">subject</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-154 788.71,-179 917.96,-179 917.96,-154 788.71,-154"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-162.75" font-family="Helvetica,sans-Serif" font-size="14.00">text</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-129 700.71,-154 788.71,-154 788.71,-129 700.71,-129"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-137.75" font-family="Helvetica,sans-Serif" font-size="14.00">snippet</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-129 788.71,-154 917.96,-154 917.96,-129 788.71,-129"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-137.75" font-family="Helvetica,sans-Serif" font-size="14.00">text</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-104 700.71,-129 788.71,-129 788.71,-104 700.71,-104"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-112.75" font-family="Helvetica,sans-Serif" font-size="14.00">body_text</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-104 788.71,-129 917.96,-129 917.96,-104 788.71,-104"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-112.75" font-family="Helvetica,sans-Serif" font-size="14.00">text</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-79 700.71,-104 788.71,-104 788.71,-79 700.71,-79"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-87.75" font-family="Helvetica,sans-Serif" font-size="14.00">body_html</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-79 788.71,-104 917.96,-104 917.96,-79 788.71,-79"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-87.75" font-family="Helvetica,sans-Serif" font-size="14.00">text</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-54 700.71,-79 788.71,-79 788.71,-54 700.71,-54"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-62.75" font-family="Helvetica,sans-Serif" font-size="14.00">labels</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-54 788.71,-79 917.96,-79 917.96,-54 788.71,-54"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-62.75" font-family="Helvetica,sans-Serif" font-size="14.00">json</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-29 700.71,-54 788.71,-54 788.71,-29 700.71,-29"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-37.75" font-family="Helvetica,sans-Serif" font-size="14.00">created_at</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-29 788.71,-54 917.96,-54 917.96,-29 788.71,-29"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-37.75" font-family="Helvetica,sans-Serif" font-size="14.00">datetime</text>
+<polygon fill="none" stroke="#1a7f37" points="700.71,-4 700.71,-29 788.71,-29 788.71,-4 700.71,-4"/>
+<text xml:space="preserve" text-anchor="start" x="705.71" y="-12.75" font-family="Helvetica,sans-Serif" font-size="14.00">updated_at</text>
+<polygon fill="none" stroke="#1a7f37" points="788.71,-4 788.71,-29 917.96,-29 917.96,-4 788.71,-4"/>
+<text xml:space="preserve" text-anchor="start" x="793.71" y="-12.75" font-family="Helvetica,sans-Serif" font-size="14.00">datetime</text>
+</g>
+<!-- GmailMailbox&#45;&gt;GmailMessage -->
+<g id="edge3" class="edge">
+<title>GmailMailbox:mb_id&#45;&gt;GmailMessage:g_mailbox</title>
+<path fill="none" stroke="#59636e" d="M313.84,-494.5C296.39,-494.5 302.34,-521.57 314.84,-533.75 404.9,-621.55 491.59,-601.07 597.84,-533.75 684,-479.15 600.54,-329.96 688.44,-318.68"/>
+<polygon fill="#59636e" stroke="#59636e" points="688.43,-322.18 698.2,-318.09 688.01,-315.2 688.43,-322.18"/>
+<text xml:space="preserve" text-anchor="middle" x="638.34" y="-519.33" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#59636e">messages</text>
+<text xml:space="preserve" text-anchor="middle" x="682.13" y="-323.65" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#59636e">0..*</text>
+<text xml:space="preserve" text-anchor="middle" x="297.38" y="-501.98" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#59636e">1</text>
+</g>
+</g>
+</svg>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <h2>🎬 Flow: connecting Gmail</h2>
+    <p class="meta">Included because this PR touches the OAuth connect + sync flow.</p>
+
+    <p class="zoomctl">
+      Zoom
+      <input type="range" min="30" max="300" value="100" step="10"
+             oninput="document.querySelector('#mermaidFlow svg').style.width=this.value+'%';document.getElementById('mermaidFlowZoomLabel').textContent=this.value+'%'">
+      <span id="mermaidFlowZoomLabel">100%</span>
+    </p>
+
+    <div style="overflow-x:auto">
+    <div class="mermaid" id="mermaidFlow">
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant B as Browser
+    participant D as Django
+    participant G as Google
+    participant C as Celery worker
+    U->>B: Click "Connect" Google Email
+    B->>D: GET google-email/start
+    D->>D: Save state + PKCE verifier in session
+    D-->>B: Redirect to Google consent
+    B->>G: Authorize (offline, gmail.readonly)
+    G-->>B: Redirect with one-time code
+    B->>D: GET google-email/callback
+    D->>G: Exchange code + verifier
+    G-->>D: Credentials (refresh_token)
+    D->>D: encrypt(refresh_token) → save mailbox
+    D->>C: sync_gmail_mailbox.delay()
+    D-->>B: Profile page: "Syncing"
+    C->>G: Full sync: 90 days, page by page
+    C->>C: Save nextPageToken, self-reschedule
+    B->>D: Poll status endpoint every 1.5s
+    D-->>B: status + run counters
+    C->>G: Incremental: history.list
+    C-->>D: historyId cursor, status Connected
+    </div>
+    </div>
+    <p class="meta">Step 10 is where the encrypted_refresh_token fix lives — reviewers see exactly where their comment applies.</p>
+  </div>
+
+  <div class="card">
+
+    <h2>📚 Schema action vocabulary</h2>
+    <p class="meta">Pinned once on the repo and linked from every PR description — shown here for reference.</p>
+    <p class="legend">
+      <span><span class="swatch" style="background:#dafbe1"></span>added</span>
+      <span><span class="swatch" style="background:#ffebe9"></span>removed</span>
+      <span><span class="swatch" style="background:#fff1e5"></span>renamed</span>
+      <span><span class="swatch" style="background:#ddf4ff"></span>modified</span>
+    </p>
+    <table>
+      <tr><th>Action</th><th>Summary row format</th><th>In the diagram</th></tr>
+      <tr class="added"><td>CREATE TABLE</td><td><code>+ CREATE TABLE integrations_calendar</code></td><td>Green header band + green border</td></tr>
+      <tr class="added"><td>ADD COLUMN</td><td><code>+ ADD COLUMN users_user.timezone varchar(64) DEFAULT 'UTC'</code></td><td>Green row inside the table</td></tr>
+      <tr class="added"><td>ADD INDEX / UNIQUE</td><td><code>+ ADD UNIQUE integrations_gmailmessage (mailbox, gmail_id)</code></td><td>Badge in the type cell: <code>UNIQUE (mailbox, gmail_id)</code></td></tr>
+      <tr class="changed"><td>RENAME COLUMN</td><td><code>~ RENAME COLUMN integrations_gmailmailbox.refresh_token → encrypted_refresh_token</code></td><td>Orange row, old → new in the type cell</td></tr>
+      <tr class="modified"><td>ALTER COLUMN</td><td><code>% ALTER COLUMN users_user.email varchar(254) → text NULL</code></td><td>Blue row, old type → new type in the type cell</td></tr>
+      <tr class="removed"><td>DROP COLUMN</td><td><code>&minus; DROP COLUMN users_user.last_name</code></td><td>Absent from the after-diagram — summary + diff block only (Rule 1)</td></tr>
+      <tr class="removed"><td>DROP TABLE</td><td><code>&minus; DROP TABLE integrations_oldapp_widget</code></td><td>Absent from the after-diagram — summary + diff block only (Rule 1)</td></tr>
+      <tr class="changed"><td>RENAME TABLE</td><td><code>~ RENAME TABLE integrations_oldapp → integrations_app</code></td><td>Orange header band, old → new in the header</td></tr>
+    </table>
+    <p class="note">Every verb names its object type — "rename what?" is never a question the reader has to ask. Green means new data, red means gone, orange means same data under a new name (safe), blue means the shape of existing data changed (review carefully). Removed objects never appear in the after-state diagram; the summary and diff block are their only home — the comment is a layer over the net migration diff, never a curation of it (Rule 1). This vocabulary card is pinned once on the repo and linked from every PR comment. Full guide: <code>docs/pr-visual-review-style-guide.md</code>.</p>
+  </div>
+
+  <div class="card">
+    <h2>How each mock is produced</h2>
+    <table>
+      <tr><th>Aid</th><th>Generated from</th><th>Posted as</th></tr>
+      <tr><td>Schema change summary</td><td>Model state diffed against the base branch, never migration history — intra-PR chains like CreateModel+RenameField coalesce to their net result</td><td>Colored markdown table + <code>diff</code> block in the PR comment</td></tr>
+      <tr><td>Full schema diff diagram</td><td>Django models introspected on PR branch, diffed against base-branch models</td><td>Mermaid block — GitHub renders natively; new tables styled green via <code>classDef</code>, new columns marked 🆕</td></tr>
+      <tr><td>Graphviz ERD (primary visual)</td><td>Same model diff, emitted as <code>dot</code> HTML-like table labels — row-level colors, grid-aligned columns, deterministic layout</td><td>Rendered in CI (<code>dot -Tsvg</code>), attached as PNG; per-row colors show new/renamed columns directly</td></tr>
+      <tr><td>Mermaid diagram (fallback)</td><td>Same diff as Mermaid <code>flowchart</code></td><td>Text block in the comment — renders natively on GitHub for email/CLI readers; whole-node colors only</td></tr>
+      <tr><td>Sequence diagram</td><td>Checked-in per-flow, auto-linked when PR touches those files</td><td>Mermaid block referenced by the bot</td></tr>
+      <tr><td>UI capture (for template changes)</td><td>Human or Playwright screenshot job</td><td>Attached image — GitHub shows swipe-diff for repeated names</td></tr>
+    </table>
+    <p class="note"><strong>Rule 1 — the bot never hides a change.</strong> The comment is a layer over the net migration diff, never a curation of it: every AddField, RenameField, RemoveField must appear in both the summary and the diagram. Omission is only allowed as an explicit count ("2 more changes — expand"), never as silence. This is enforced in CI — a test asserts each operation from the diff is present in the generated comment, so a dropped fact fails the build instead of quietly misleading a reviewer.</p>
+    <p class="note">Rendering notes found the hard way: (1) Mermaid's <code>htmlLabels</code> accept real <code>&lt;table&gt;</code> markup — <code>bgcolor</code> and <code>align</code> survive its DOMPurify sanitizer, so left-aligned keys, right-aligned types, and per-row colors all work natively in the diagram. Caveat: GitHub renders Mermaid with its own sanitizer — verify once with a real PR comment. (2) If using <code>classDef</code> anywhere, style names must be lowercase — camelCase names are silently dropped, no error, no color. (3) In <code>classDiagram</code> specifically, <code>classDef</code> styling is unreliable — use <code>flowchart</code>.</p>
+  </div>
+
+</div>
+</body>
+</html>
