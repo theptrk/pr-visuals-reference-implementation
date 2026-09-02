@@ -10,14 +10,18 @@ open it in a browser.
 ## Branch map
 
 Read each branch's `PR.md` as if it were the real PR description for that
-branch's diff against its parent.
+branch's diff against its parent — or read the real PRs, which are the most
+illustrative form:
 
-| Branch | Theme | What the PR demonstrates |
-|---|---|---|
-| `main` | baseline | Fresh project skeleton, style guide, PR template |
-| `theme/creating-dbs` | creating DBs | `CREATE TABLE` ×4 — summary table, colored ERD, raw diff block |
-| `theme/changing-dbs` | changing DBs | One PR exercising all five change types: `RENAME COLUMN` (orange), `ALTER COLUMN` (blue), `DROP COLUMN` / `DROP TABLE` (red), `ADD COLUMN` (green) |
-| `theme/adding-logic` | adding logic | No schema change — the schema sections are *absent*, a sequence flow diagram appears instead |
+| Branch | Theme | Real PR | What it demonstrates |
+|---|---|---|---|
+| `main` | baseline | — | Fresh project skeleton, style guide, PR template |
+| `theme/creating-dbs` | creating DBs | [PR #1 — Add the catalog schema](https://github.com/theptrk/pr-visuals-reference-implementation/pull/1) | `CREATE TABLE` ×4 — summary table, colored ERD, raw diff block |
+| `theme/changing-dbs` | changing DBs | [PR #2 — Reshape the catalog schema](https://github.com/theptrk/pr-visuals-reference-implementation/pull/2) | One PR exercising all five change types: `RENAME COLUMN` (orange), `ALTER COLUMN` (blue), `DROP COLUMN` / `DROP TABLE` (red), `ADD COLUMN` (green) |
+| `theme/adding-logic` | adding logic | [PR #3 — Add tag merging and note search](https://github.com/theptrk/pr-visuals-reference-implementation/pull/3) | No schema change — the schema sections are *absent*, a sequence flow diagram appears instead |
+
+The PRs are stacked: each is based on its parent theme branch, so each PR's
+diff is exactly one theme.
 
 ## Rules the PRs follow (from the style guide)
 
@@ -39,13 +43,15 @@ under `docs/assets/`:
 dot -Tsvg -o docs/assets/<name>.svg <(extract the dot source from PR.md)
 ```
 
-## Making real PRs from the branches
+## Opening the PRs in another repo
 
-Push the repo and open one PR per theme branch:
+The three PRs above were opened with one command per stacked branch — the
+same recipe for adopting this in your own project:
 
 ```sh
-gh repo create pr-visuals-reference-implementation --public --source=.
-git push -u origin main
-git push origin theme/creating-dbs theme/changing-dbs theme/adding-logic
+git push origin main theme/creating-dbs theme/changing-dbs theme/adding-logic
 gh pr create --base main --head theme/creating-dbs --title "..." --body-file PR.md
+# then per branch, each based on its parent:
+gh pr create --base theme/creating-dbs --head theme/changing-dbs --title "..." --body-file PR.md
+gh pr create --base theme/changing-dbs --head theme/adding-logic --title "..." --body-file PR.md
 ```
