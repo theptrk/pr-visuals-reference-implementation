@@ -147,21 +147,30 @@ diagram ("step 10 is where the token is encrypted").
 
 ## 6. PR description layout
 
-The visual aids are one **PR description body** — a single page representing the
-entire PR — generated from the diff when the PR opens and re-rendered on every
-push. A section appears only when the PR touches what it describes. Sections are
-ordered by decreasing scan speed:
+**Prose first.** A PR description is a real description with the visual layer
+riding on top; visuals never replace it. A visuals-only PR is a slideshow, not
+a description. Order:
 
-1. **Schema changes** — colored action table (vocabulary format) plus a raw
-   `diff`-fenced block. Fastest read; authoritative record (Rule 1).
-2. **Schema diff diagram** — the Graphviz render (primary image, attached). A
-   table-grid Mermaid variant can be included beneath it when email/CLI
-   readers matter; it is a fallback, not the default.
-3. **Affected flow diagrams** — sequence diagrams for flows the PR touches.
-4. A link to the pinned vocabulary card.
+1. **Summary** — what this PR does and why, one bullet per concern,
+   information-dense (API surface, data, rollout, monitoring, docs...).
+2. **Decisions & invariants** — the design choices worth a reviewer's conscious
+   sign-off (deliberate `CASCADE`, a destructive drop) and the guarantee this
+   PR must preserve ("no request can observe another user's data").
+3. **Testing** — what was verified and the concrete result, not an aspiration.
+4. **Schema changes** (visual) — colored action table in the vocabulary format
+   plus a raw `diff`-fenced block. Fastest read; authoritative record (Rule 1).
+   Present only when models/migrations changed.
+5. **Schema diff diagram** (visual) — the Graphviz render (primary image). A
+   table-grid Mermaid variant can be included when email/CLI readers matter;
+   it is a fallback, not the default.
+6. **Affected flow diagrams** (visual) — sequence diagrams for flows the PR
+   touches.
+7. A link to the pinned vocabulary card.
 
-Long raw lists collapse behind `<details>`, but their contents are complete —
-collapsing is fine, hiding is not.
+A section appears only when the PR touches what it describes — a pure-logic PR
+has no schema section at all (absent, not empty). Long raw lists collapse
+behind `<details>`, but their contents are complete — collapsing is fine,
+hiding is not.
 
 ## 7. Rendering notes on GitHub
 
