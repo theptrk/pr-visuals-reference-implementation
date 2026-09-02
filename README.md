@@ -9,9 +9,9 @@ open it in a browser.
 
 ## Branch map
 
-Read each branch's `PR.md` as if it were the real PR description for that
-branch's diff against its parent — or read the real PRs, which are the most
-illustrative form:
+Each branch carries its PR description at `docs/prs/<theme>.md` — one file per
+theme, never shared across branches, so the stacked branches cannot conflict —
+and the real PRs are the most illustrative form:
 
 | Branch | Theme | Real PR | What it demonstrates |
 |---|---|---|---|
@@ -50,8 +50,8 @@ same recipe for adopting this in your own project:
 
 ```sh
 git push origin main theme/creating-dbs theme/changing-dbs theme/adding-logic
-gh pr create --base main --head theme/creating-dbs --title "..." --body-file PR.md
+gh pr create --base main --head theme/creating-dbs --title "..." --body-file docs/prs/creating-dbs.md
 # then per branch, each based on its parent:
-gh pr create --base theme/creating-dbs --head theme/changing-dbs --title "..." --body-file PR.md
-gh pr create --base theme/changing-dbs --head theme/adding-logic --title "..." --body-file PR.md
+gh pr create --base theme/creating-dbs --head theme/changing-dbs --title "..." --body-file docs/prs/changing-dbs.md
+gh pr create --base theme/changing-dbs --head theme/adding-logic --title "..." --body-file docs/prs/adding-logic.md
 ```
