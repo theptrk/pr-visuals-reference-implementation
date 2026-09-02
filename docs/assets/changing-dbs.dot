@@ -1,0 +1,35 @@
+digraph changing_dbs {
+  rankdir=LR
+  bgcolor="transparent"
+  node [shape=plaintext fontname="Helvetica"]
+  edge [fontname="Helvetica" fontsize=10 color="#59636e" fontcolor="#59636e"]
+
+  Tag [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#0969da">
+      <TR><TD BGCOLOR="#0969da" COLSPAN="2"><FONT COLOR="white" POINT-SIZE="12"><B>catalog_tag</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">id</TD><TD ALIGN="LEFT">bigint PK</TD></TR>
+      <TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">varchar(100)</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#fff1e5">code</TD><TD ALIGN="LEFT" BGCOLOR="#fff1e5">varchar(100) UNIQUE &#8592; renamed from slug</TD></TR>
+    </TABLE>>];
+
+  Note [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#0969da">
+      <TR><TD BGCOLOR="#0969da" COLSPAN="2"><FONT COLOR="white" POINT-SIZE="12"><B>catalog_note</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="n_id">id</TD><TD ALIGN="LEFT">bigint PK</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ddf4ff">title</TD><TD ALIGN="LEFT" BGCOLOR="#ddf4ff">varchar(200) &#8592; was varchar(100)</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#dafbe1">updated_at</TD><TD ALIGN="LEFT" BGCOLOR="#dafbe1">datetime NEW</TD></TR>
+      <TR><TD ALIGN="LEFT">created_at</TD><TD ALIGN="LEFT">datetime</TD></TR>
+    </TABLE>>];
+
+  NoteTags [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#59636e">
+      <TR><TD BGCOLOR="#59636e" COLSPAN="2"><FONT COLOR="white" POINT-SIZE="12"><B>catalog_note_tags</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">id</TD><TD ALIGN="LEFT">bigint PK</TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="nt_note">note_id</TD><TD ALIGN="LEFT">FK &#8594; catalog_note</TD></TR>
+      <TR><TD ALIGN="LEFT" PORT="nt_tag">tag_id</TD><TD ALIGN="LEFT">FK &#8594; catalog_tag</TD></TR>
+      <TR><TD ALIGN="LEFT" COLSPAN="2">UNIQUE (note_id, tag_id)</TD></TR>
+    </TABLE>>];
+
+  Note:n_id -> NoteTags:nt_note [taillabel="1", headlabel="0..*", label="notes", labeldistance=2]
+  Tag -> NoteTags:nt_tag [taillabel="1", headlabel="0..*", label="notes", labeldistance=2]
+}

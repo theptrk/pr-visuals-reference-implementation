@@ -1,8 +1,8 @@
-# PR: Add the catalog schema — Note, Tag, Bookmark
+# PR: Reshape the catalog schema — rename, alter, add, drop
 
-> Theme: **creating DBs** (diff of `theme/creating-dbs` against `main`).
+> Theme: **changing DBs** (diff of `theme/changing-dbs` against `theme/creating-dbs`).
 > Written per [docs/pr-visual-review-style-guide.md](docs/pr-visual-review-style-guide.md).
-> The schema sections are included because this PR changes `catalog/models.py` and `catalog/migrations/`.
+> One PR deliberately exercising every change type.
 
 ## 📊 Schema changes
 
@@ -10,47 +10,55 @@
 
 | Change | Table | Column | Type |
 |---|---|---|---|
-| 🟢 `+ CREATE TABLE` | catalog_tag | — | 3 columns |
-| 🟢 `+ CREATE TABLE` | catalog_note | — | 4 columns |
-| 🟢 `+ CREATE TABLE` | catalog_note_tags | — | 3 columns, 1 unique (m2m junction, created by `Add field tags to note`) |
-| 🟢 `+ CREATE TABLE` | catalog_bookmark | — | 4 columns |
-| 🟢 `+ ADD COLUMN` | catalog_note | tags | m2m → catalog_tag |
+| 🟠 `~ RENAME COLUMN` | catalog_tag | slug → code | varchar(100) UNIQUE |
+| 🔵 `% ALTER COLUMN` | catalog_note | title | varchar(100) → varchar(200) |
+| 🟢 `+ ADD COLUMN` | catalog_note | updated_at | datetime |
+| 🔴 `− DROP COLUMN` | catalog_note | body | text |
+| 🔴 `− DROP TABLE` | catalog_bookmark | — | 4 columns |
+
+Dropped objects (🔴) never appear in the after-state diagram below — this table
+and the raw block are their only home, so nothing is silently hidden (Rule 1).
 
 <details>
 <summary>Raw changes</summary>
 
 ```diff
-+ CREATE TABLE catalog_tag        (id, name, slug UNIQUE)
-+ CREATE TABLE catalog_note       (id, title, body, created_at)
-+ CREATE TABLE catalog_note_tags  (id, note_id FK → catalog_note, tag_id FK → catalog_tag, UNIQUE (note_id, tag_id))
-+ CREATE TABLE catalog_bookmark   (id, note_id FK → catalog_note, url, created_at)
+~ RENAME COLUMN catalog_tag.slug TO code
+% ALTER COLUMN catalog_note.title varchar(100) → varchar(200)
++ ADD COLUMN catalog_note.updated_at datetime
+- DROP COLUMN catalog_note.body
+- DROP TABLE catalog_bookmark (migration 0002)
 ```
 
 </details>
 
 ## 🧭 Schema diff diagram
 
-All four tables are new — green header bands, green borders. Green means new
-data; nothing existed here before.
+After-state. Blue header band = existing table, modified; the header of an
+untouched table (`catalog_note_tags`) stays gray. Rows carry the change colors:
+orange = renamed, blue = altered, green = new.
 
-![catalog schema ERD](docs/assets/creating-dbs.svg)
+Read per the vocabulary: orange rows are the same data under a new name (safe);
+the blue row changed the shape of existing data (the one to scrutinize — is
+`varchar(100) → varchar(200)` correct for all existing rows?); green rows are
+new data; the two 🔴 removals above are the complete list.
+
+![catalog schema ERD after changes](docs/assets/changing-dbs.svg)
 
 <details>
-<summary>Graphviz source (regenerate: <code>dot -Tsvg -o docs/assets/creating-dbs.svg docs/assets/creating-dbs.dot</code>)</summary>
+<summary>Graphviz source (regenerate: <code>dot -Tsvg -o docs/assets/changing-dbs.svg docs/assets/changing-dbs.dot</code>)</summary>
 
 ```dot
-digraph creating_dbs {
+digraph changing_dbs {
   rankdir=LR
   node [shape=plaintext fontname="Helvetica"]
 
   Tag [label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#1a7f37">
-      <TR><TD BGCOLOR="#1a7f37" COLSPAN="2"><FONT COLOR="white"><B>catalog_tag</B></FONT></TD></TR>
-      <TR><TD ALIGN="LEFT">id</TD><TD ALIGN="LEFT">bigint PK</TD></TR>
-      <TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">varchar(100)</TD></TR>
-      <TR><TD ALIGN="LEFT">slug</TD><TD ALIGN="LEFT">varchar(100) UNIQUE</TD></TR>
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" COLOR="#0969da">
+      <TR><TD BGCOLOR="#0969da" COLSPAN="2"><FONT COLOR="white"><B>catalog_tag</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#fff1e5">code</TD><TD ALIGN="LEFT" BGCOLOR="#fff1e5">varchar(100) UNIQUE &#8592; renamed from slug</TD></TR>
     </TABLE>>];
-  /* ...full source in docs/assets/creating-dbs.dot... */
+  /* ...full source in docs/assets/changing-dbs.dot... */
 }
 ```
 
